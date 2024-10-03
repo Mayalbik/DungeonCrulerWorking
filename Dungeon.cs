@@ -1,8 +1,10 @@
-﻿namespace Dungeon_Cruler_2._0.DungeonCruler2
+﻿using Dungeon_Cruler_2._0.DungeonCruler2.DungeonCrulerWorking;
+
+namespace Dungeon_Cruler_2._0.DungeonCruler2
 {
     public class Dungeon
     {
-        public string[,] Rooms { get; set; }
+        public Room[,] Rooms { get; set; }
         public int CurrentRoomX { get; set; }
         public int CurrentRoomY { get; set; }
         public bool[,] VisitedRooms { get; set; }
@@ -17,14 +19,15 @@
 
         public void CreateRooms()
         {
-            Rooms = new string[,]{
-                { "Room 1", "Room 2", "Room 3" },
-                { "Room 4", "Room 5", "Room 6" },
-                { "Room 7", "Room 8", "Room 9" }
+            Rooms = new Room[,]
+            {
+    { new Room(1, "Room 1"), new TreasureRoom(2, "Room 2", 50, 1), new Room(3, "Room 3") },
+    { new Room(4, "Room 4"), new TrainingRoom(5, "Room 5", 5), new Room(6, "Room 6") },
+    { new Room(7, "Room 7"), new Room(8, "Room 8"), new TreasureRoom(9, "Room 9", 100, 2) }
             };
         }
 
-        public string GetCurrentRoom()
+        public Room GetCurrentRoom()
         {
             return Rooms[CurrentRoomX, CurrentRoomY];
         }
@@ -36,7 +39,6 @@
                 CurrentRoomY++;
                 return true;
             }
-            Console.WriteLine("Sorry, this room is out of range. Please try again.");
             return false;
         }
 
@@ -47,7 +49,6 @@
                 CurrentRoomY--;
                 return true;
             }
-            Console.WriteLine("Sorry, this room is out of range. Please try again.");
             return false;
         }
 
@@ -58,7 +59,6 @@
                 CurrentRoomX--;
                 return true;
             }
-            Console.WriteLine("Sorry, this room is out of range. Please try again.");
             return false;
         }
 
@@ -69,7 +69,6 @@
                 CurrentRoomX++;
                 return true;
             }
-            Console.WriteLine("Sorry, this room is out of range. Please try again.");
             return false;
         }
 

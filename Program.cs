@@ -1,4 +1,5 @@
 ﻿using System;
+using Dungeon_Cruler_2._0.DungeonCruler2.DungeonCrulerWorking;
 
 namespace Dungeon_Cruler_2._0.DungeonCruler2
 {
@@ -25,16 +26,37 @@ namespace Dungeon_Cruler_2._0.DungeonCruler2
         {
             while (true)
             {
-                Console.WriteLine($"You are now in {dungeon.GetCurrentRoom()}.");
-                Console.WriteLine($"You are level {player.GetLevel()} | {player.GetPower()} power | {player.GetCurrentHP()} HP");
+                Console.WriteLine($"You are now in {dungeon.GetCurrentRoom().Description}.");
+                Console.WriteLine($"You are level {player.GetLevel()} | {player.GetPower()} power | {player.GetCurrentHP()} HP | {player.GetExperience()} XP | {player.GetShield()} Shield(s)");
 
-                if (dungeon.PlayerVisitedRoom())
+                if (dungeon.GetCurrentRoom() is TreasureRoom treasureRoom)
+                {
+                    treasureRoom.GiveTreasure(player);
+                }
+                else if (dungeon.GetCurrentRoom() is TrainingRoom trainingRoom)
+                {
+                    trainingRoom.TrainPlayer(player);
+                }
+                else if (dungeon.PlayerVisitedRoom())
                 {
                     Console.WriteLine("You have already visited this room. No need to fight the monster again.");
                 }
                 else
                 {
-                    Monster monster = new Monster();
+                    Random random = new Random();
+                    Monster monster;
+
+                    if (random.Next(2) == 0) 
+                    {
+                        monster = new RageMonster(5);
+                        Console.WriteLine("A RageMonster has appeared!");
+                    }
+                    else
+                    {
+                        monster = new Monster();
+                        Console.WriteLine("A regular Monster has appeared!");
+                    }
+
                     monster.ResetHP();
                     Console.WriteLine($"A wild {monster.GetMonsterName()} appears with {monster.GetPower()} power and {monster.GetCurrentHP()} HP!");
                     Battle(player, dungeon, monster);
@@ -62,34 +84,24 @@ namespace Dungeon_Cruler_2._0.DungeonCruler2
                 {
                     PlayerAttack(player, monster);
 
-                    if (player.GetCurrentHP() <= 0 && monster.GetCurrentHP() <= 0 && player.GetAttackCount() == monster.GetAttackCount())
-                    {
-                        Console.WriteLine($"Double kill! Both {player.GetPlayerName()} and the {monster.GetMonsterName()} died in the same round.");
-                        player.PlayerDefeatingMonster(50);  // Giving 50 XP for the battle
-                        player.ResetHP();
-                        monster.ResetHP();
-                        dungeon.ResetDungeon();
-                        restartCount++;
-                        totalLosses++;
-                        CheckRestartCount(player, dungeon);
-                        return;
-                    }
-
-                    MonsterAttack(player, monster);
-
                     if (monster.GetCurrentHP() <= 0)
                     {
-                        Console.WriteLine($"The {monster.GetMonsterName()} has been defeated!");
-                        player.PlayerDefeatingMonster(100);  // Giving 100 XP for defeating a monster
+                        Console.WriteLine($"The {monster.GetMonsterName()} has been defeated but gets one last attack!");
+                        MonsterAttack(player, monster); 
+                        player.PlayerDefeatingMonster(100);
                         player.ResetHP();
                         totalWins++;
                         Console.WriteLine($"You gained XP! You are now level {player.GetLevel()} with {player.GetPower()} power and {player.GetCurrentHP()} HP.");
                         return;
                     }
 
+                    if (player.GetCurrentHP() > 0)
+                    {
+                        MonsterAttack(player, monster);
+                    }
+
                     if (player.GetCurrentHP() <= 0)
                     {
-                        Console.WriteLine($"{player.GetPlayerName()} has been defeated!");
                         player.PlayerLose();
                         monster.ResetHP();
                         restartCount++;
@@ -112,7 +124,7 @@ namespace Dungeon_Cruler_2._0.DungeonCruler2
         public static void MonsterAttack(Player player, Monster monster)
         {
             Console.WriteLine($"The {monster.GetMonsterName()} attacks {player.GetPlayerName()}!");
-            player.setCurrentHP(player.GetCurrentHP() - monster.GetPower());
+            player.ReceiveDamage(monster.GetPower());
             monster.IncreaseAttackCount();
             Console.WriteLine($"{player.GetPlayerName()} now has {player.GetCurrentHP()} HP.");
         }
@@ -127,8 +139,6 @@ namespace Dungeon_Cruler_2._0.DungeonCruler2
             {
                 Console.WriteLine($"{player.GetPlayerName()} is revived and ready to continue.");
                 player.ResetHP();
-                Monster monster = new Monster();
-                monster.ResetHP();
                 dungeon.ResetDungeon();
             }
         }
@@ -139,13 +149,11 @@ namespace Dungeon_Cruler_2._0.DungeonCruler2
             {
                 Console.WriteLine("You won the dungeon!");
                 Console.WriteLine($"Final Results: {totalWins} Wins | {totalLosses} Losses");
-                Console.WriteLine("Thanks for playing!");
             }
             else
             {
                 Console.WriteLine("You lost the dungeon.");
                 Console.WriteLine($"Final Results: {totalWins} Wins | {totalLosses} Losses");
-                Console.WriteLine("Thanks for playing!");
             }
         }
 
@@ -161,39 +169,16 @@ namespace Dungeon_Cruler_2._0.DungeonCruler2
                 switch (direction)
                 {
                     case "right":
-                        if (dungeon.MoveRight())
-                        {
-                            Console.WriteLine($"You moved right to {dungeon.GetCurrentRoom()}.");
-                            validMove = true;
-                        }
+                        validMove = dungeon.MoveRight();
                         break;
-
                     case "left":
-                        if (dungeon.MoveLeft())
-                        {
-                            Console.WriteLine($"You moved left to {dungeon.GetCurrentRoom()}.");
-                            validMove = true;
-                        }
+                        validMove = dungeon.MoveLeft();
                         break;
-
                     case "up":
-                        if (dungeon.MoveUp())
-                        {
-                            Console.WriteLine($"You moved up to {dungeon.GetCurrentRoom()}.");
-                            validMove = true;
-                        }
+                        validMove = dungeon.MoveUp();
                         break;
-
                     case "down":
-                        if (dungeon.MoveDown())
-                        {
-                            Console.WriteLine($"You moved down to {dungeon.GetCurrentRoom()}.");
-                            validMove = true;
-                        }
-                        break;
-
-                    default:
-                        Console.WriteLine("Invalid direction. Please choose 'right', 'left', 'up', or 'down'.");
+                        validMove = dungeon.MoveDown();
                         break;
                 }
 

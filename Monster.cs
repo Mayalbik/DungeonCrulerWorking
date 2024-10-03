@@ -39,9 +39,14 @@ namespace Dungeon_Cruler_2._0.DungeonCruler2
             return attackCount;
         }
 
-        public void IncreaseAttackCount()
+        public virtual void IncreaseAttackCount()
         {
             attackCount++;
+        }
+
+        protected void SetPower(int newPower) 
+        {
+            power = newPower;
         }
 
         public void ResetHP()
@@ -50,7 +55,7 @@ namespace Dungeon_Cruler_2._0.DungeonCruler2
             attackCount = 0;
         }
 
-        public void ReceiveDamage(int damage)
+        public virtual void ReceiveDamage(int damage)
         {
             currentHP -= damage;
         }
